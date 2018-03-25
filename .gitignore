@@ -1,4 +1,5 @@
 /.envrc
+/build
 /vendor
 
 # Binaries for programs and plugins
