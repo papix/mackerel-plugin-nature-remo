@@ -1,35 +1,22 @@
 package mpnatureremo
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 
 	mp "github.com/mackerelio/go-mackerel-plugin"
+	natureremo "github.com/papix/go-nature-remo/cloud"
 )
 
 type NatureRemoPlugin struct {
 	Prefix      string
 	AccessToken string
-}
-
-type Device struct {
-	Name         string `json:"name"`
-	NewestEvents struct {
-		Hu struct {
-			Val int `json:"val"`
-		} `json:"hu"`
-		Te struct {
-			Val float64 `json:"val"`
-		} `json:"te"`
-	} `json:"newest_events"`
+	Client      *natureremo.Client
 }
 
 func (nr NatureRemoPlugin) GraphDefinition() map[string]mp.Graphs {
-	devices, err := nr.fetchDevices()
+	devices, err := nr.Client.GetDevices()
 	if err != nil {
 		return nil
 	}
@@ -62,50 +49,17 @@ func (nr NatureRemoPlugin) GraphDefinition() map[string]mp.Graphs {
 	return ret
 }
 
-func (nr NatureRemoPlugin) fetchDevices() ([]Device, error) {
-	req, err := http.NewRequest("GET", "https://api.nature.global/1/devices", nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", nr.AccessToken))
-
-	tr := &http.Transport{
-		TLSNextProto: nil,
-	}
-
-	client := &http.Client{Transport: tr}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var devices []Device
-	err = json.Unmarshal(body, &devices)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return devices, nil
-}
-
 func (nr NatureRemoPlugin) FetchMetrics() (map[string]float64, error) {
 	ret := map[string]float64{}
 
-	devices, err := nr.fetchDevices()
+	devices, err := nr.Client.GetDevices()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, device := range devices {
-		ret[fmt.Sprintf("temperature.%s", device.Name)] = float64(device.NewestEvents.Te.Val)
-		ret[fmt.Sprintf("humidity.%s", device.Name)] = float64(device.NewestEvents.Hu.Val)
+		ret[fmt.Sprintf("temperature.%s", device.Name)] = float64(device.NewestEvents.Temperature.Value)
+		ret[fmt.Sprintf("humidity.%s", device.Name)] = float64(device.NewestEvents.Humidity.Value)
 	}
 
 	return ret, nil
@@ -124,9 +78,11 @@ func Do() {
 	optTempfile := flag.String("tempfile", "", "Temp file name")
 	flag.Parse()
 
+	client := natureremo.NewClient(*optAccessToken)
 	nr := NatureRemoPlugin{
 		Prefix:      *optPrefix,
 		AccessToken: *optAccessToken,
+		Client:      client,
 	}
 
 	plugin := mp.NewMackerelPlugin(nr)

@@ -11,11 +11,17 @@
   branch = "master"
   name = "github.com/mackerelio/golib"
   packages = ["pluginutil"]
-  revision = "295ea2626d02a5d78c2ad6c4148a77ab68540b79"
+  revision = "ca1d7fa7b764fa1509c7f5bc571cf89ec6db527c"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/papix/go-nature-remo"
+  packages = ["cloud"]
+  revision = "2955643e4a80823db534c77b0aa8f25c362852a3"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6900b4e1a61fa4b554728885d30c72be63c74cc28563526a4e3507adf628ec84"
+  inputs-digest = "26b9de44561632665da2e7c5e9aa70fc753cea7fab8ba88c57f81d635f36c815"
   solver-name = "gps-cdcl"
   solver-version = 1
