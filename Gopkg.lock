@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/papix/go-nature-remo"
   packages = ["cloud"]
-  revision = "2955643e4a80823db534c77b0aa8f25c362852a3"
+  revision = "1d6b79aed6e297da5fd1884a383aafb055650ebd"
 
 [solve-meta]
   analyzer-name = "dep"

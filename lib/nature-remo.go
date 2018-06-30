@@ -24,6 +24,7 @@ func (nr NatureRemoPlugin) GraphDefinition() map[string]mp.Graphs {
 	ret := map[string]mp.Graphs{}
 	temperature := make([]mp.Metrics, len(devices))
 	humidity := make([]mp.Metrics, len(devices))
+	illuminance := make([]mp.Metrics, len(devices))
 
 	for i, device := range devices {
 		temperature[i] = mp.Metrics{
@@ -33,6 +34,10 @@ func (nr NatureRemoPlugin) GraphDefinition() map[string]mp.Graphs {
 		humidity[i] = mp.Metrics{
 			Name:  fmt.Sprintf("humidity.%s", device.Name),
 			Label: "humidity",
+		}
+		illuminance[i] = mp.Metrics{
+			Name:  fmt.Sprintf("illuminance.%s", device.Name),
+			Label: "illuminance",
 		}
 	}
 	ret["temperature"] = mp.Graphs{
@@ -44,6 +49,11 @@ func (nr NatureRemoPlugin) GraphDefinition() map[string]mp.Graphs {
 		Label:   "humidity",
 		Unit:    mp.UnitInteger,
 		Metrics: humidity,
+	}
+	ret["illuminance"] = mp.Graphs{
+		Label:   "illuminance",
+		Unit:    mp.UnitFloat,
+		Metrics: illuminance,
 	}
 
 	return ret
@@ -60,6 +70,7 @@ func (nr NatureRemoPlugin) FetchMetrics() (map[string]float64, error) {
 	for _, device := range devices {
 		ret[fmt.Sprintf("temperature.%s", device.Name)] = float64(device.NewestEvents.Temperature.Value)
 		ret[fmt.Sprintf("humidity.%s", device.Name)] = float64(device.NewestEvents.Humidity.Value)
+		ret[fmt.Sprintf("illuminance.%s", device.Name)] = float64(device.NewestEvents.Illuminance.Value)
 	}
 
 	return ret, nil
