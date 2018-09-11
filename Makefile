@@ -1,14 +1,29 @@
-DEP ?= dep
-BUILD_DIR = ./build
-NATURE_REMO_PLUGIN = $(BUILD_DIR)/mackerel-plugin-nature-remo
+LATEST_TAG := $(shell git describe --abbrev=0 --tags)
 
-all: deps $(NATURE_REMO_PLUGIN)
+setup:
+	go get \
+		github.com/Songmu/goxz/cmd/goxz \
+		github.com/tcnksm/ghr \
+		github.com/golang/lint/golint \
+		github.com/golang/dep/cmd/dep
+	go get -d -t ./...
+	dep ensure
 
-deps:
-	$(DEP) ensure -vendor-only
+test:
+	go test -v ./...
 
-$(NATURE_REMO_PLUGIN):
-	go build -o $(NATURE_REMO_PLUGIN) main.go
+lint:
+	go vet ./...
+	golint -set_exit_status ./...
+
+dist:
+	goxz -d dist/$(LATEST_TAG) -z -os windows,darwin,linux -arch amd64,386
+	goxz -d dist/$(LATEST_TAG) -z -os linux -arch mipsle
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf dist/*
+
+release:
+	ghr -u papix -r mackerel-plugin-nature-remo $(LATEST_TAG) dist/$(LATEST_TAG)
+
+.PHONY: setup test lint dist clean
