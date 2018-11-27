@@ -6,12 +6,12 @@ This plugin can send temperature and humidity detected by your Nature Remo.
 ## Synopsis
 
 ```
-mackerel-plugin-nature-remo -access-key=<access-key>
+mackerel-plugin-nature-remo -access-token=<access-token>
 ```
 
 ## Example of mackerel-agent.conf
 
 ```
 [plugin.metrics.NatureRemo]
-command = "/path/to/mackerel-plugin-nature-remo -access-key=..."
+command = "/path/to/mackerel-plugin-nature-remo -access-token=..."
 ```
