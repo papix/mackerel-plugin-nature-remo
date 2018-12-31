@@ -18,7 +18,7 @@ lint:
 
 dist:
 	goxz -d dist/$(LATEST_TAG) -z -os windows,darwin,linux -arch amd64,386
-	goxz -d dist/$(LATEST_TAG) -z -os linux -arch mipsle
+	goxz -d dist/$(LATEST_TAG) -z -os linux -arch mipsle,arm
 
 clean:
 	rm -rf dist/*
