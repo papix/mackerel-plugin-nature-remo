@@ -58,9 +58,17 @@ func (nr NatureRemoPlugin) FetchMetrics() (map[string]float64, error) {
 	}
 
 	for _, device := range devices {
-		ret[fmt.Sprintf("temperature.%s", normalizeName(device.Name))] = float64(device.NewestEvents.Temperature.Value)
-		ret[fmt.Sprintf("humidity.%s", normalizeName(device.Name))] = float64(device.NewestEvents.Humidity.Value)
-		ret[fmt.Sprintf("illuminance.%s", normalizeName(device.Name))] = float64(device.NewestEvents.Illuminance.Value)
+		devName := normalizeName(device.Name)
+		evs := device.NewestEvents
+		if evs.Temperature.CreatedAt != "" {
+			ret[fmt.Sprintf("temperature.%s", devName)] = float64(evs.Temperature.Value)
+		}
+		if evs.Humidity.CreatedAt != "" {
+			ret[fmt.Sprintf("humidity.%s", devName)] = float64(evs.Humidity.Value)
+		}
+		if evs.Illuminance.CreatedAt != "" {
+			ret[fmt.Sprintf("illuminance.%s", devName)] = float64(evs.Illuminance.Value)
+		}
 	}
 
 	return ret, nil
