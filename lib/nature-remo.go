@@ -16,47 +16,29 @@ type NatureRemoPlugin struct {
 }
 
 func (nr NatureRemoPlugin) GraphDefinition() map[string]mp.Graphs {
-	devices, err := nr.Client.GetDevices()
-	if err != nil {
-		return nil
+	return map[string]mp.Graphs{
+		"temperature": {
+			Label: "Temperature",
+			Unit:  mp.UnitFloat,
+			Metrics: []mp.Metrics{
+				{Name: "*", Label: "%1"},
+			},
+		},
+		"humidity": {
+			Label: "Humidity",
+			Unit:  mp.UnitInteger,
+			Metrics: []mp.Metrics{
+				{Name: "*", Label: "%1"},
+			},
+		},
+		"illuminance": {
+			Label: "Illluminance",
+			Unit:  mp.UnitFloat,
+			Metrics: []mp.Metrics{
+				{Name: "*", Label: "%1"},
+			},
+		},
 	}
-
-	ret := map[string]mp.Graphs{}
-	temperature := make([]mp.Metrics, len(devices))
-	humidity := make([]mp.Metrics, len(devices))
-	illuminance := make([]mp.Metrics, len(devices))
-
-	for i, device := range devices {
-		temperature[i] = mp.Metrics{
-			Name:  fmt.Sprintf("temperature.%s", device.Name),
-			Label: "temperature",
-		}
-		humidity[i] = mp.Metrics{
-			Name:  fmt.Sprintf("humidity.%s", device.Name),
-			Label: "humidity",
-		}
-		illuminance[i] = mp.Metrics{
-			Name:  fmt.Sprintf("illuminance.%s", device.Name),
-			Label: "illuminance",
-		}
-	}
-	ret["temperature"] = mp.Graphs{
-		Label:   "temperature",
-		Unit:    mp.UnitFloat,
-		Metrics: temperature,
-	}
-	ret["humidity"] = mp.Graphs{
-		Label:   "humidity",
-		Unit:    mp.UnitInteger,
-		Metrics: humidity,
-	}
-	ret["illuminance"] = mp.Graphs{
-		Label:   "illuminance",
-		Unit:    mp.UnitFloat,
-		Metrics: illuminance,
-	}
-
-	return ret
 }
 
 func (nr NatureRemoPlugin) FetchMetrics() (map[string]float64, error) {
