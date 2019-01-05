@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
+	"strings"
 
 	mp "github.com/mackerelio/go-mackerel-plugin"
 	natureremo "github.com/papix/go-nature-remo/cloud"
@@ -41,6 +43,12 @@ func (nr NatureRemoPlugin) GraphDefinition() map[string]mp.Graphs {
 	}
 }
 
+var reg = regexp.MustCompile(`[^-a-zA-Z0-9_]`)
+
+func normalizeName(devName string) string {
+	return reg.ReplaceAllString(strings.TrimSpace(devName), "_")
+}
+
 func (nr NatureRemoPlugin) FetchMetrics() (map[string]float64, error) {
 	ret := map[string]float64{}
 
@@ -50,9 +58,9 @@ func (nr NatureRemoPlugin) FetchMetrics() (map[string]float64, error) {
 	}
 
 	for _, device := range devices {
-		ret[fmt.Sprintf("temperature.%s", device.Name)] = float64(device.NewestEvents.Temperature.Value)
-		ret[fmt.Sprintf("humidity.%s", device.Name)] = float64(device.NewestEvents.Humidity.Value)
-		ret[fmt.Sprintf("illuminance.%s", device.Name)] = float64(device.NewestEvents.Illuminance.Value)
+		ret[fmt.Sprintf("temperature.%s", normalizeName(device.Name))] = float64(device.NewestEvents.Temperature.Value)
+		ret[fmt.Sprintf("humidity.%s", normalizeName(device.Name))] = float64(device.NewestEvents.Humidity.Value)
+		ret[fmt.Sprintf("illuminance.%s", normalizeName(device.Name))] = float64(device.NewestEvents.Illuminance.Value)
 	}
 
 	return ret, nil
