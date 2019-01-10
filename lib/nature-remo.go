@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
+	"strings"
 
 	mp "github.com/mackerelio/go-mackerel-plugin"
 	natureremo "github.com/papix/go-nature-remo/cloud"
@@ -16,47 +18,35 @@ type NatureRemoPlugin struct {
 }
 
 func (nr NatureRemoPlugin) GraphDefinition() map[string]mp.Graphs {
-	devices, err := nr.Client.GetDevices()
-	if err != nil {
-		return nil
+	return map[string]mp.Graphs{
+		"temperature": {
+			Label: "Temperature",
+			Unit:  mp.UnitFloat,
+			Metrics: []mp.Metrics{
+				{Name: "*", Label: "%1"},
+			},
+		},
+		"humidity": {
+			Label: "Humidity",
+			Unit:  mp.UnitInteger,
+			Metrics: []mp.Metrics{
+				{Name: "*", Label: "%1"},
+			},
+		},
+		"illuminance": {
+			Label: "Illluminance",
+			Unit:  mp.UnitFloat,
+			Metrics: []mp.Metrics{
+				{Name: "*", Label: "%1"},
+			},
+		},
 	}
+}
 
-	ret := map[string]mp.Graphs{}
-	temperature := make([]mp.Metrics, len(devices))
-	humidity := make([]mp.Metrics, len(devices))
-	illuminance := make([]mp.Metrics, len(devices))
+var reg = regexp.MustCompile(`[^-a-zA-Z0-9_]`)
 
-	for i, device := range devices {
-		temperature[i] = mp.Metrics{
-			Name:  fmt.Sprintf("temperature.%s", device.Name),
-			Label: "temperature",
-		}
-		humidity[i] = mp.Metrics{
-			Name:  fmt.Sprintf("humidity.%s", device.Name),
-			Label: "humidity",
-		}
-		illuminance[i] = mp.Metrics{
-			Name:  fmt.Sprintf("illuminance.%s", device.Name),
-			Label: "illuminance",
-		}
-	}
-	ret["temperature"] = mp.Graphs{
-		Label:   "temperature",
-		Unit:    mp.UnitFloat,
-		Metrics: temperature,
-	}
-	ret["humidity"] = mp.Graphs{
-		Label:   "humidity",
-		Unit:    mp.UnitInteger,
-		Metrics: humidity,
-	}
-	ret["illuminance"] = mp.Graphs{
-		Label:   "illuminance",
-		Unit:    mp.UnitFloat,
-		Metrics: illuminance,
-	}
-
-	return ret
+func normalizeName(devName string) string {
+	return reg.ReplaceAllString(strings.TrimSpace(devName), "_")
 }
 
 func (nr NatureRemoPlugin) FetchMetrics() (map[string]float64, error) {
@@ -68,9 +58,17 @@ func (nr NatureRemoPlugin) FetchMetrics() (map[string]float64, error) {
 	}
 
 	for _, device := range devices {
-		ret[fmt.Sprintf("temperature.%s", device.Name)] = float64(device.NewestEvents.Temperature.Value)
-		ret[fmt.Sprintf("humidity.%s", device.Name)] = float64(device.NewestEvents.Humidity.Value)
-		ret[fmt.Sprintf("illuminance.%s", device.Name)] = float64(device.NewestEvents.Illuminance.Value)
+		devName := normalizeName(device.Name)
+		evs := device.NewestEvents
+		if evs.Temperature.CreatedAt != "" {
+			ret[fmt.Sprintf("temperature.%s", devName)] = float64(evs.Temperature.Value)
+		}
+		if evs.Humidity.CreatedAt != "" {
+			ret[fmt.Sprintf("humidity.%s", devName)] = float64(evs.Humidity.Value)
+		}
+		if evs.Illuminance.CreatedAt != "" {
+			ret[fmt.Sprintf("illuminance.%s", devName)] = float64(evs.Illuminance.Value)
+		}
 	}
 
 	return ret, nil
