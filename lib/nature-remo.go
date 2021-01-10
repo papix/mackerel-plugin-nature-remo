@@ -34,7 +34,7 @@ func (nr NatureRemoPlugin) GraphDefinition() map[string]mp.Graphs {
 			},
 		},
 		"illuminance": {
-			Label: "Illluminance",
+			Label: "Illuminance",
 			Unit:  mp.UnitFloat,
 			Metrics: []mp.Metrics{
 				{Name: "*", Label: "%1"},
